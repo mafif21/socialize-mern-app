@@ -15,6 +15,7 @@ export const verifyToken = async (req, res, next) => {
 
     const verified = jwt.verify(token, process.env.SECRET_KEY);
     req.user = verified;
+    delete req.user.password;
     next();
   } catch (error) {
     res.status(500).json({ message: error.message });
