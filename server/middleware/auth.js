@@ -9,7 +9,7 @@ export const verifyToken = async (req, res, next) => {
       return;
     }
 
-    if (token.startsWith("Bearier ")) {
+    if (token.startsWith("Bearer ")) {
       token = token.split(" ")[1].trimLeft();
     }
 
