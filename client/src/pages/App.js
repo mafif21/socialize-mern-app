@@ -21,8 +21,8 @@ function App() {
         <Navbar />
       </Box>
       <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/home" element={<Homepage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile/:userId" element={<Profile />} />
       </Routes>
