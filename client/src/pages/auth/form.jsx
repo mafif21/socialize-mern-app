@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -12,22 +12,22 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
+import { setLogin } from "../../redux/features/Auth";
 import Dropzone from "react-dropzone";
-import FlexBetween from "../../components/FlexBetween";
-import { setLogin } from "redux/features/Auth";
+import FlexBetween from "components/FlexBetween";
 
 const registerSchema = yup.object().shape({
   firstName: yup.string().required("first name is required"),
   lastName: yup.string().required("last name is required"),
-  email: yup.string().email("invalid email").required("email is required"),
+  email: yup.string().email("invalid email").required("required"),
   password: yup.string().required("password is required"),
-  picturePath: yup.string().required("picture must be filled"),
   location: yup.string().required("location is required"),
   occupation: yup.string().required("occupation is required"),
+  picture: yup.string().required("picture must be fill"),
 });
 
 const loginSchema = yup.object().shape({
-  email: yup.string().email().required("email is required"),
+  email: yup.string().email("invalid email").required("email is required"),
   password: yup.string().required("password is required"),
 });
 
@@ -48,15 +48,67 @@ const initialValuesLogin = {
 
 const Form = () => {
   const [pageType, setPageType] = useState("login");
+  const { palette } = useTheme();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const isNonMobile = useMediaQuery("(min-width:600px)");
   const isLogin = pageType === "login";
   const isRegister = pageType === "register";
-  const isNonMobile = useMediaQuery("(min-width: 600px)");
-  const { palette } = useTheme();
 
-  const handleFormSubmit = () => {
-    alert("hello world");
+  const register = async (values, onSubmitProps) => {
+    try {
+      // this allows us to send form info with image
+      const formData = new FormData();
+      for (let value in values) {
+        formData.append(value, values[value]);
+      }
+      formData.append("picturePath", values.picture.name);
+
+      const savedUserResponse = await fetch(
+        "http://localhost:4000/auth/register",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const savedUser = await savedUserResponse.json();
+      onSubmitProps.resetForm();
+
+      if (savedUser) {
+        setPageType("login");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const login = async (values, onSubmitProps) => {
+    try {
+      const loggedInResponse = await fetch("http://localhost:4000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      const responseJson = await loggedInResponse.json();
+      onSubmitProps.resetForm();
+
+      if (responseJson.statusCode === 200) {
+        dispatch(
+          setLogin({
+            user: responseJson.user,
+            token: responseJson.token,
+          })
+        );
+        navigate("/home");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
+  const handleFormSubmit = async (values, onSubmitProps) => {
+    if (isLogin) await login(values, onSubmitProps);
+    if (isRegister) await register(values, onSubmitProps);
   };
 
   return (
@@ -98,7 +150,6 @@ const Form = () => {
                   helperText={touched.firstName && errors.firstName}
                   sx={{ gridColumn: "span 2" }}
                 />
-
                 <TextField
                   label="Last Name"
                   onBlur={handleBlur}
@@ -109,7 +160,6 @@ const Form = () => {
                   helperText={touched.lastName && errors.lastName}
                   sx={{ gridColumn: "span 2" }}
                 />
-
                 <TextField
                   label="Location"
                   onBlur={handleBlur}
@@ -120,7 +170,6 @@ const Form = () => {
                   helperText={touched.location && errors.location}
                   sx={{ gridColumn: "span 4" }}
                 />
-
                 <TextField
                   label="Occupation"
                   onBlur={handleBlur}
@@ -133,7 +182,6 @@ const Form = () => {
                   helperText={touched.occupation && errors.occupation}
                   sx={{ gridColumn: "span 4" }}
                 />
-
                 <Box
                   gridColumn="span 4"
                   border={`1px solid ${palette.neutral.medium}`}
@@ -182,6 +230,7 @@ const Form = () => {
             />
             <TextField
               label="Password"
+              type="password"
               onBlur={handleBlur}
               onChange={handleChange}
               value={values.password}
@@ -192,6 +241,7 @@ const Form = () => {
             />
           </Box>
 
+          {/* BUTTONS */}
           <Box>
             <Button
               fullWidth
@@ -206,7 +256,6 @@ const Form = () => {
             >
               {isLogin ? "LOGIN" : "REGISTER"}
             </Button>
-
             <Typography
               onClick={() => {
                 setPageType(isLogin ? "register" : "login");

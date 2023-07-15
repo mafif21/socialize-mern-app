@@ -8,7 +8,7 @@ function Login() {
 
   return (
     <Box>
-      {/* <Box
+      <Box
         width="100%"
         backgroundColor={theme.palette.background.alt}
         p="1rem 6%"
@@ -17,7 +17,7 @@ function Login() {
         <Typography fontWeight="bold" fontSize="32px" color="primary">
           Socialize
         </Typography>
-      </Box> */}
+      </Box>
 
       <Box
         width={isNonMobileScreens ? "50%" : "93%"}
