@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 export const getFeedPosts = async (req, res) => {
   try {
-    const allPosts = await Post.find();
+    const allPosts = await Post.find().sort({ field: "asc", _id: -1 });
     res.status(202).json({ posts: allPosts });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -60,10 +60,6 @@ export const createPost = async (req, res) => {
   try {
     const { userId, description, picturePath } = req.body;
 
-    if (!userId || !description || !picturePath) {
-      return res.status(404).json({ message: "data is required" });
-    }
-
     const user = await User.findById(userId);
     if (!user) {
       return res.status(401).json({ message: "user not found" });
@@ -82,7 +78,9 @@ export const createPost = async (req, res) => {
     });
 
     await newPost.save();
-    res.status(201).json({ message: newPost });
+
+    const posts = await Post.find().sort({ field: "asc", _id: -1 });
+    res.status(201).json({ posts });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
